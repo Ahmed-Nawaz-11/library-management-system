@@ -1,9 +1,10 @@
 from pathlib import Path
 from datetime import timedelta
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-iex&u(owx^0k5vr2*w8dn$xseradha+8cki@e*-5%b7r6*x0gi'
+SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
@@ -66,11 +67,11 @@ WSGI_APPLICATION = 'library_management_system.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'library_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Ahm@d345',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 

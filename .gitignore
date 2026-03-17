@@ -1,0 +1,38 @@
+# Virtual environment
+venv/
+
+# Environment variables - MOST IMPORTANT
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+*.log
+db.sqlite3
+media/
+
+# VS Code
+.vscode/
+
+# pyenv / venv config
+pyvenv.cfg
+
+# Antigravity task files
+library_management_task.md
+
+# PostgreSQL dump files (if you ever export DB)
+*.sql
+*.dump
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Python packaging
+*.egg-info/
+dist/
+build/
