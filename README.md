@@ -66,11 +66,12 @@ LIBRARY MANAGEMENT SYSTEM/
 - Role-based access: public GET, librarian/admin POST/PATCH, admin DELETE
 - Blocks deletion of books with active borrow records
 
-### Borrowing App (Models Ready)
+### Borrowing App (Core Logic Ready)
 
 - `BorrowRecord` — tracks every book issue and return
 - `Fine` — auto-calculated on late returns
 - `Reservation` — queue system for unavailable books
+- **APIs**: Issue and Return functionalities are fully implemented with fines & reservations integrations.
 
 ---
 
@@ -120,11 +121,16 @@ GET    /api/categories/              List categories (public)
 POST   /api/categories/              Add category (librarian/admin)
 ```
 
-### Borrowing (coming soon)
+### Borrowing
 
+**Implemented:**
 ```
 POST   /api/borrow/issue/            Issue book to member (librarian/admin)
 POST   /api/borrow/return/           Return a book (librarian/admin)
+```
+
+**Coming soon:**
+```
 POST   /api/borrow/renew/            Renew borrow period (librarian/admin)
 GET    /api/borrow/history/          Borrow history
 GET    /api/borrow/overdue/          All overdue records (librarian/admin)
