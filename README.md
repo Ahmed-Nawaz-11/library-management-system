@@ -1,6 +1,6 @@
 # Library Management System API
 
-A full-featured backend REST API for managing a library — built with Django, Django REST Framework, JWT authentication, and PostgreSQL.
+A full-featured backend REST API for managing a library — built with Django, Django REST Framework, JWT authentication, and PostgreSQL. All data is returned in JSON format for easy frontend consumption.
 
 ---
 
@@ -10,8 +10,9 @@ A full-featured backend REST API for managing a library — built with Django, D
 - Django 6.0.3
 - Django REST Framework
 - SimpleJWT (JWT authentication)
-- PostgreSQL
+- PostgreSQL 18
 - django-cors-headers
+- python-decouple (environment variable management)
 
 ---
 
@@ -19,28 +20,38 @@ A full-featured backend REST API for managing a library — built with Django, D
 
 ```
 LIBRARY MANAGEMENT SYSTEM/
-├── library_management_system/    # Main Django project folder
-│   ├── settings.py
-│   ├── urls.py
+├── .env                               # Secret credentials (never pushed to GitHub)
+├── .gitignore                         # Files excluded from GitHub
+├── manage.py                          # Django management entry point
+├── requirements.txt                   # All installed Python packages
+├── README.md                          # This file
+│
+├── library_management_system/         # Main Django project folder
+│   ├── settings.py                    # All Django settings and configurations
+│   ├── urls.py                        # Root URL router
+│   ├── permissions.py                 # Custom role-based permission classes
+│   ├── utils.py                       # success_response and error_response helpers
 │   ├── wsgi.py
 │   └── asgi.py
-├── accounts/                     # User auth, roles, membership
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
+│
+├── accounts/                          # User auth, roles, membership
+│   ├── models.py                      # Custom User model with roles
+│   ├── serializers.py                 # Register, Login, User, ChangePassword serializers
+│   ├── views.py                       # Auth views
 │   └── urls.py
-├── books/                        # Book catalogue, authors, categories
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
+│
+├── books/                             # Book catalogue, authors, categories
+│   ├── models.py                      # Author, Category, Book models
+│   ├── permissions.py                 # IsAdminOrLibrarian permission
+│   ├── serializers.py                 # Book, Author, Category serializers
+│   ├── views.py                       # Book CRUD with search and filter
 │   └── urls.py
-├── borrowing/                    # Borrow records, fines, reservations
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
-├── manage.py
-└── requirements.txt
+│
+└── borrowing/                         # Borrow records, fines, reservations, reports
+    ├── models.py                      # BorrowRecord, Fine, Reservation models
+    ├── serializers.py                 # Borrow, Fine, Reservation serializers
+    ├── views.py                       # All borrowing operations and reports
+    └── urls.py
 ```
 
 ---
@@ -51,27 +62,38 @@ LIBRARY MANAGEMENT SYSTEM/
 
 - Custom User model with roles: `admin`, `librarian`, `member`
 - JWT-based registration and login
+- Login with either **username or email** + password
 - User profile view and update
-- Change password
-- Admin can list all members
-- Admin can suspend / activate members
+- Change password with old password verification
+- Admin can list all members with pagination
+- Admin can suspend and activate member accounts
 - Membership expiry tracking
 
 ### Books App
 
 - Full CRUD for Books, Authors, Categories
-- Search books by title, author, ISBN
+- Search books by title, author name, or ISBN
 - Filter by category and availability
 - Paginated results (10 per page)
 - Role-based access: public GET, librarian/admin POST/PATCH, admin DELETE
-- Blocks deletion of books with active borrow records
+- Blocks deletion of books that have active borrow records
 
-### Borrowing App (Core Logic Ready)
+### Borrowing App
 
-- `BorrowRecord` — tracks every book issue and return
-- `Fine` — auto-calculated on late returns
-- `Reservation` — queue system for unavailable books
-- **APIs**: Issue and Return functionalities are fully implemented with fines & reservations integrations.
+- Issue books to members with 4-step validation
+- Auto-decrement and increment available_copies on issue and return
+- Auto-calculate fines on late returns ($0.50 per overdue day)
+- Renew borrow period (once per record, 14 extra days)
+- Reservation queue for unavailable books
+- Mark fines as paid (librarian) or waive entirely (admin)
+- Full borrow history with filters
+- Overdue book detection and tracking
+
+### Reports
+
+- Dashboard summary (total books, members, active borrows, unpaid fines)
+- Most popular books by borrow count (public)
+- Overdue members report with days overdue and fine amounts
 
 ---
 
@@ -79,29 +101,40 @@ LIBRARY MANAGEMENT SYSTEM/
 
 | Action | Member | Librarian | Admin |
 |---|---|---|---|
-| Browse books | ✅ | ✅ | ✅ |
+| Browse and search books | ✅ | ✅ | ✅ |
 | Add / edit books | ❌ | ✅ | ✅ |
 | Delete books | ❌ | ❌ | ✅ |
 | Issue / return books | ❌ | ✅ | ✅ |
+| Renew borrow period | ✅ | ✅ | ✅ |
+| Make reservations | ✅ | ✅ | ✅ |
 | View own profile | ✅ | ✅ | ✅ |
+| View own borrow history | ✅ | ✅ | ✅ |
+| View any member's history | ❌ | ✅ | ✅ |
 | View all members | ❌ | ❌ | ✅ |
 | Suspend members | ❌ | ❌ | ✅ |
+| Mark fines as paid | ❌ | ✅ | ✅ |
 | Waive fines | ❌ | ❌ | ✅ |
-| View reports | ❌ | ✅ | ✅ |
+| View reports and dashboard | ❌ | ❌ | ✅ |
+| View popular books | ✅ | ✅ | ✅ |
 
 ---
 
 ## API Endpoints
 
-### Auth & Members
+### Authentication
 
 ```
-POST   /api/auth/register/           Register new member
-POST   /api/auth/login/              Login and get JWT tokens
+POST   /api/auth/register/           Register new member account
+POST   /api/auth/login/              Login with username or email + password
 POST   /api/auth/refresh/            Refresh access token
 GET    /api/auth/profile/            View own profile
 PATCH  /api/auth/profile/            Update own profile
 POST   /api/auth/change-password/    Change own password
+```
+
+### Member Management
+
+```
 GET    /api/members/                 List all members (admin only)
 POST   /api/members/<id>/suspend/    Suspend a member (admin only)
 POST   /api/members/<id>/activate/   Activate a member (admin only)
@@ -110,7 +143,7 @@ POST   /api/members/<id>/activate/   Activate a member (admin only)
 ### Books
 
 ```
-GET    /api/books/                   List all books (public, supports search & filter)
+GET    /api/books/                   List all books — public, supports search and filter
 POST   /api/books/                   Add a book (librarian/admin)
 GET    /api/books/<id>/              Book detail (public)
 PATCH  /api/books/<id>/              Update book (librarian/admin)
@@ -121,47 +154,76 @@ GET    /api/categories/              List categories (public)
 POST   /api/categories/              Add category (librarian/admin)
 ```
 
+**Book search and filter query params:**
+
+```
+GET /api/books/?search=harry           Search by title, author, or ISBN
+GET /api/books/?category=1             Filter by category ID
+GET /api/books/?available=true         Show only available books
+GET /api/books/?search=harry&page=2    Combine search with pagination
+```
+
 ### Borrowing
 
-**Implemented:**
 ```
-POST   /api/borrow/issue/            Issue book to member (librarian/admin)
-POST   /api/borrow/return/           Return a book (librarian/admin)
+POST   /api/borrow/issue/             Issue book to member (librarian/admin)
+POST   /api/borrow/return/            Return a book (librarian/admin)
+POST   /api/borrow/renew/             Renew borrow period
+GET    /api/borrow/history/           Borrow history (own for member, any for librarian/admin)
+GET    /api/borrow/overdue/           All overdue records (librarian/admin)
 ```
 
-**Coming soon:**
+### Reservations
+
 ```
-POST   /api/borrow/renew/            Renew borrow period (librarian/admin)
-GET    /api/borrow/history/          Borrow history
-GET    /api/borrow/overdue/          All overdue records (librarian/admin)
-GET    /api/reservations/            List reservations
-POST   /api/reservations/            Reserve a book (member)
-GET    /api/fines/                   List fines
-POST   /api/fines/<id>/pay/          Mark fine as paid (librarian/admin)
-POST   /api/fines/<id>/waive/        Waive fine (admin only)
-GET    /api/reports/summary/         Dashboard summary (admin)
-GET    /api/reports/popular-books/   Most borrowed books (admin)
+GET    /api/reservations/             View reservations (own for member, all for librarian/admin)
+POST   /api/reservations/             Reserve an unavailable book (member)
+DELETE /api/reservations/<id>/cancel/ Cancel a reservation
+```
+
+### Fines
+
+```
+GET    /api/fines/                    View fines (own for member, all for librarian/admin)
+GET    /api/fines/?is_paid=false      Filter unpaid fines
+POST   /api/fines/<id>/pay/           Mark fine as paid (librarian/admin)
+POST   /api/fines/<id>/waive/         Waive fine completely (admin only)
+```
+
+### Reports
+
+```
+GET    /api/reports/summary/          Dashboard summary (admin only)
+GET    /api/reports/popular-books/    Most borrowed books (public)
+GET    /api/reports/overdue-members/  Members with overdue books (admin only)
 ```
 
 ---
 
 ## JSON Response Format
 
-Every endpoint returns this consistent structure:
+Every single endpoint returns this consistent structure:
 
 **Success:**
 
 ```json
 {
     "success": true,
-    "message": "User registered successfully",
-    "data": { ... },
+    "message": "Book issued successfully",
+    "data": {
+        "id": 1,
+        "book_title": "Harry Potter",
+        "member_username": "ahmad_member",
+        "borrow_date": "2026-05-01",
+        "due_date": "2026-05-15",
+        "status": "borrowed"
+    },
     "pagination": {
-        "count": 100,
+        "count": 50,
         "next": "/api/books/?page=2",
         "previous": null,
         "current_page": 1,
-        "total_pages": 10
+        "total_pages": 5
     }
 }
 ```
@@ -171,12 +233,14 @@ Every endpoint returns this consistent structure:
 ```json
 {
     "success": false,
-    "message": "Registration failed",
+    "message": "Cannot issue book",
     "errors": {
-        "username": ["This field is required."]
+        "member": ["This member is suspended"]
     }
 }
 ```
+
+The `pagination` key only appears on list endpoints. The `errors` key only appears on error responses.
 
 ---
 
@@ -187,11 +251,12 @@ Every endpoint returns this consistent structure:
 - Python 3.10+
 - PostgreSQL installed and running
 - pgAdmin (optional, for visual DB management)
+- Git
 
 ### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/library-management-system.git
+git clone https://github.com/Ahmed-Nawaz-11/library-management-system.git
 cd library-management-system
 ```
 
@@ -215,15 +280,15 @@ pip install -r requirements.txt
 
 ### Step 4 — Create the PostgreSQL database
 
-Open pgAdmin or psql and run:
+Open pgAdmin and create a database named `library_db`. Or run in psql:
 
 ```sql
 CREATE DATABASE library_db;
 ```
 
-### Step 5 — Configure environment variables
+### Step 5 — Create .env file
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (same level as manage.py):
 
 ```
 SECRET_KEY=your-secret-key-here
@@ -233,8 +298,6 @@ DB_PASSWORD=your-postgres-password
 DB_HOST=127.0.0.1
 DB_PORT=5432
 ```
-
-> Note: Update `settings.py` to read from `.env` using `python-decouple` or `python-dotenv` if needed. For now you can directly update the `DATABASES` and `SECRET_KEY` values in `settings.py`.
 
 ### Step 6 — Run migrations
 
@@ -253,14 +316,22 @@ python manage.py shell
 from accounts.models import User
 
 # Create admin
-admin = User.objects.create_user(username="admin_user", email="admin@library.com", password="Admin@1234")
+admin = User.objects.create_user(
+    username="admin_user",
+    email="admin@library.com",
+    password="Admin@1234"
+)
 admin.role = "admin"
 admin.is_staff = True
 admin.is_superuser = True
 admin.save()
 
 # Create librarian
-librarian = User.objects.create_user(username="librarian1", email="lib@library.com", password="Lib@1234")
+librarian = User.objects.create_user(
+    username="librarian1",
+    email="lib@library.com",
+    password="Lib@1234"
+)
 librarian.role = "librarian"
 librarian.save()
 
@@ -279,12 +350,48 @@ API is now live at `http://127.0.0.1:8000/`
 
 ## Testing with Postman
 
-Import the collection or manually test endpoints:
+**Step 1 — Register a member:**
 
-1. Register: `POST /api/auth/register/`
-2. Login: `POST /api/auth/login/` — copy the `access` token
-3. Set Authorization → Bearer Token in Postman for protected routes
-4. Test books: `GET /api/books/` (public, no token needed)
+POST `/api/auth/register/`
+
+```json
+{
+    "username": "ahmad_member",
+    "email": "ahmad@test.com",
+    "password": "Test@1234",
+    "phone": "03001234567"
+}
+```
+
+**Step 2 — Login with username or email (both work):**
+
+POST `/api/auth/login/`
+
+```json
+{
+    "username": "ahmad_member",
+    "password": "Test@1234"
+}
+```
+
+or
+
+```json
+{
+    "email": "ahmad@test.com",
+    "password": "Test@1234"
+}
+```
+
+Copy the `access` token from the response.
+
+**Step 3 — Use token for protected routes:**
+
+In Postman go to Authorization tab → Bearer Token → paste access token.
+
+**Step 4 — Test public book endpoint (no token needed):**
+
+GET `/api/books/`
 
 ---
 
@@ -295,11 +402,25 @@ Import the collection or manually test endpoints:
 | Field | Type | Notes |
 |---|---|---|
 | username | CharField | unique |
-| email | EmailField | |
-| phone | CharField | |
+| email | EmailField | unique |
+| phone | CharField | optional |
 | role | CharField | admin / librarian / member |
 | membership_expiry | DateField | null allowed |
 | is_suspended | BooleanField | default False |
+
+### books.Author
+
+| Field | Type | Notes |
+|---|---|---|
+| name | CharField | |
+| bio | TextField | optional |
+| nationality | CharField | optional |
+
+### books.Category
+
+| Field | Type | Notes |
+|---|---|---|
+| name | CharField | unique |
 
 ### books.Book
 
@@ -312,8 +433,9 @@ Import the collection or manually test endpoints:
 | publisher | CharField | |
 | publish_year | IntegerField | |
 | total_copies | IntegerField | |
-| available_copies | IntegerField | |
+| available_copies | IntegerField | managed by system, read-only |
 | cover_image | URLField | optional |
+| created_at | DateTimeField | auto |
 
 ### borrowing.BorrowRecord
 
@@ -325,6 +447,38 @@ Import the collection or manually test endpoints:
 | due_date | DateField | borrow + 14 days |
 | return_date | DateField | null until returned |
 | status | CharField | borrowed / returned / overdue |
+| renewed | BooleanField | default False |
+
+### borrowing.Fine
+
+| Field | Type | Notes |
+|---|---|---|
+| borrow_record | OneToOne → BorrowRecord | |
+| amount | DecimalField | overdue days x $0.50 |
+| is_paid | BooleanField | default False |
+| is_waived | BooleanField | default False |
+
+### borrowing.Reservation
+
+| Field | Type | Notes |
+|---|---|---|
+| member | FK → User | |
+| book | FK → Book | |
+| reserved_at | DateTimeField | auto |
+| is_active | BooleanField | default True |
+| expires_at | DateField | set when book becomes available |
+
+---
+
+## Security
+
+- All sensitive credentials stored in `.env` file and never pushed to GitHub
+- JWT access tokens expire in 60 minutes
+- JWT refresh tokens expire in 7 days
+- Every endpoint has a specific permission class
+- Wrong role returns `403 Forbidden`
+- No token returns `401 Unauthorized`
+- CORS configured for frontend access during development
 
 ---
 
@@ -332,7 +486,7 @@ Import the collection or manually test endpoints:
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m "Add your feature"`
+3. Commit your changes: `git commit -m "Add your feature"`
 4. Push to branch: `git push origin feature/your-feature`
 5. Open a Pull Request
 

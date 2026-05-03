@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
@@ -8,7 +8,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone', 'role', 'membership_expiry', 'is_suspended']
-        # Requirements imply all of these fields are read-only
         read_only_fields = ['id', 'username', 'email', 'phone', 'role', 'membership_expiry', 'is_suspended']
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -28,6 +27,37 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if not username and not email:
+            raise serializers.ValidationError("Please provide username or email")
+
+        if email:
+            try:
+                user_obj = User.objects.get(email=email)
+                username = user_obj.username
+            except User.DoesNotExist:
+                raise serializers.ValidationError("Invalid credentials")
+
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            raise serializers.ValidationError("Invalid credentials")
+
+        if not user.is_active:
+            raise serializers.ValidationError("User account is disabled.")
+
+        attrs['user'] = user
+        return attrs
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)

@@ -4,23 +4,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 
-from .serializers import RegisterSerializer, UserSerializer, ChangePasswordSerializer
-from .permissions import IsAdminUserChoice
-from .pagination import CustomPagination
+from .serializers import RegisterSerializer, UserSerializer, ChangePasswordSerializer, LoginSerializer
+from library_management_system.permissions import IsAdmin, IsAdminOrLibrarian
+from library_management_system.utils import success_response, error_response
 
 User = get_user_model()
-
-def success_response(message, data=None, status_code=status.HTTP_200_OK):
-    res = {"success": True, "message": message}
-    if data is not None:
-        res["data"] = data
-    return Response(res, status=status_code)
-
-def error_response(message, errors=None, status_code=status.HTTP_400_BAD_REQUEST):
-    res = {"success": False, "message": message}
-    if errors is not None:
-        res["errors"] = errors
-    return Response(res, status=status_code)
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -39,17 +27,34 @@ class RegisterView(generics.CreateAPIView):
                     'access': str(refresh.access_token),
                 }
             }
-            return success_response("User registered successfully", data, status.HTTP_201_CREATED)
-        return error_response("Registration failed", serializer.errors, status.HTTP_400_BAD_REQUEST)
+            return success_response(data=data, message="User registered successfully", status=status.HTTP_201_CREATED)
+        return error_response(message="Registration failed", errors=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class LoginView(TokenObtainPairView):
+class LoginView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-            return success_response("Login successful", serializer.validated_data)
-        except Exception as e:
-            return error_response("Invalid credentials", {"detail": str(e)}, status.HTTP_401_UNAUTHORIZED)
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(message="Invalid credentials", errors=serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+        
+        user = serializer.validated_data['user']
+        refresh = RefreshToken.for_user(user)
+        
+        data = {
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role
+            },
+            "tokens": {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh)
+            }
+        }
+        
+        return success_response(data=data, message="Login successful")
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -61,7 +66,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get(self, request, *args, **kwargs):
         user = self.get_object()
         serializer = self.get_serializer(user)
-        return success_response("User profile retrieved successfully", serializer.data)
+        return success_response(data=serializer.data, message="User profile retrieved successfully")
 
     def patch(self, request, *args, **kwargs):
         user = self.get_object()
@@ -72,26 +77,31 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
             user.phone = request.data['phone']
         user.save()
         serializer = self.get_serializer(user)
-        return success_response("User profile updated successfully", serializer.data)
+        return success_response(data=serializer.data, message="User profile updated successfully")
         
 class MemberListView(generics.ListAPIView):
     queryset = User.objects.filter(role='member').order_by('-id')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdminUserChoice]
-    pagination_class = CustomPagination
-
+    permission_classes = [IsAdminOrLibrarian]
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            pagination_data = {
+                "count": self.paginator.page.paginator.count,
+                "next": self.paginator.get_next_link(),
+                "previous": self.paginator.get_previous_link(),
+                "current_page": self.paginator.page.number,
+                "total_pages": self.paginator.page.paginator.num_pages
+            }
+            return success_response(data=serializer.data, message="Members retrieved successfully", pagination=pagination_data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return success_response("Members retrieved successfully", serializer.data)
+        return success_response(data=serializer.data, message="Members retrieved successfully")
 
 class SuspendMemberView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated, IsAdminUserChoice]
+    permission_classes = [IsAdmin]
 
     def post(self, request, pk, *args, **kwargs):
         try:
@@ -99,9 +109,9 @@ class SuspendMemberView(views.APIView):
             member.is_suspended = not member.is_suspended
             member.save()
             status_str = "suspended" if member.is_suspended else "unsuspended"
-            return success_response(f"Member successfully {status_str}", UserSerializer(member).data)
+            return success_response(data=UserSerializer(member).data, message=f"Member successfully {status_str}")
         except User.DoesNotExist:
-            return error_response("Member not found", status_code=status.HTTP_404_NOT_FOUND)
+            return error_response(message="Member not found", status=status.HTTP_404_NOT_FOUND)
 
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
@@ -116,5 +126,5 @@ class ChangePasswordView(generics.UpdateAPIView):
             user = self.get_object()
             user.set_password(serializer.validated_data['new_password'])
             user.save()
-            return success_response("Password changed successfully")
-        return error_response("Password change failed", serializer.errors)
+            return success_response(message="Password changed successfully")
+        return error_response(message="Password change failed", errors=serializer.errors)

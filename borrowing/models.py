@@ -15,6 +15,7 @@ class BorrowRecord(models.Model):
     due_date = models.DateField()
     return_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='borrowed')
+    renewed = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.member} - {self.book.title}"

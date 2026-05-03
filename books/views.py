@@ -3,72 +3,76 @@ from rest_framework.response import Response
 from django.db.models import Q
 from .models import Author, Category, Book
 from .serializers import AuthorSerializer, CategorySerializer, BookSerializer
-from .permissions import IsAdminOrLibrarian, IsAdmin
-from accounts.pagination import CustomPagination
-
-def success_response(message, data=None, status_code=status.HTTP_200_OK):
-    res = {"success": True, "message": message}
-    if data is not None:
-        if isinstance(data, dict) and 'count' in data and 'results' in data:
-            res["data"] = data
-        else:
-            res["data"] = data
-    return Response(res, status=status_code)
-
-def error_response(message, errors=None, status_code=status.HTTP_400_BAD_REQUEST):
-    res = {"success": False, "message": message}
-    if errors is not None:
-        res["errors"] = errors
-    return Response(res, status=status_code)
+from library_management_system.permissions import IsAdminOrLibrarian, IsAdmin
+from library_management_system.utils import success_response, error_response
 
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrLibrarian]
-    pagination_class = CustomPagination
-
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [IsAdminOrLibrarian()]
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return success_response("Categories retrieved successfully", self.paginator.get_paginated_response(serializer.data).data['data'])
+            pagination_data = {
+                "count": self.paginator.page.paginator.count,
+                "next": self.paginator.get_next_link(),
+                "previous": self.paginator.get_previous_link(),
+                "current_page": self.paginator.page.number,
+                "total_pages": self.paginator.page.paginator.num_pages
+            }
+            return success_response(data=serializer.data, message="Categories retrieved successfully", pagination=pagination_data)
         serializer = self.get_serializer(queryset, many=True)
-        return success_response("Categories retrieved successfully", serializer.data)
+        return success_response(data=serializer.data, message="Categories retrieved successfully")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return success_response("Category created successfully", serializer.data, status.HTTP_201_CREATED)
-        return error_response("Failed to create category", serializer.errors)
+            return success_response(data=serializer.data, message="Category created successfully", status=status.HTTP_201_CREATED)
+        return error_response(message="Failed to create category", errors=serializer.errors)
 
 class AuthorListCreateView(generics.ListCreateAPIView):
     queryset = Author.objects.all().order_by('id')
     serializer_class = AuthorSerializer
-    permission_classes = [IsAdminOrLibrarian]
-    pagination_class = CustomPagination
-
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [IsAdminOrLibrarian()]
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return success_response("Authors retrieved successfully", self.paginator.get_paginated_response(serializer.data).data['data'])
+            pagination_data = {
+                "count": self.paginator.page.paginator.count,
+                "next": self.paginator.get_next_link(),
+                "previous": self.paginator.get_previous_link(),
+                "current_page": self.paginator.page.number,
+                "total_pages": self.paginator.page.paginator.num_pages
+            }
+            return success_response(data=serializer.data, message="Authors retrieved successfully", pagination=pagination_data)
         serializer = self.get_serializer(queryset, many=True)
-        return success_response("Authors retrieved successfully", serializer.data)
+        return success_response(data=serializer.data, message="Authors retrieved successfully")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return success_response("Author created successfully", serializer.data, status.HTTP_201_CREATED)
-        return error_response("Failed to create author", serializer.errors)
+            return success_response(data=serializer.data, message="Author created successfully", status=status.HTTP_201_CREATED)
+        return error_response(message="Failed to create author", errors=serializer.errors)
 
 class BookListCreateView(generics.ListCreateAPIView):
     serializer_class = BookSerializer
-    permission_classes = [IsAdminOrLibrarian]
-    pagination_class = CustomPagination
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [IsAdminOrLibrarian()]
+
 
     def get_queryset(self):
         queryset = Book.objects.all().order_by('-id')
@@ -97,9 +101,16 @@ class BookListCreateView(generics.ListCreateAPIView):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return success_response("Books retrieved successfully", self.paginator.get_paginated_response(serializer.data).data['data'])
+            pagination_data = {
+                "count": self.paginator.page.paginator.count,
+                "next": self.paginator.get_next_link(),
+                "previous": self.paginator.get_previous_link(),
+                "current_page": self.paginator.page.number,
+                "total_pages": self.paginator.page.paginator.num_pages
+            }
+            return success_response(data=serializer.data, message="Books retrieved successfully", pagination=pagination_data)
         serializer = self.get_serializer(queryset, many=True)
-        return success_response("Books retrieved successfully", serializer.data)
+        return success_response(data=serializer.data, message="Books retrieved successfully")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -110,8 +121,8 @@ class BookListCreateView(generics.ListCreateAPIView):
                 serializer.save(available_copies=validated_data['total_copies'])
             else:
                 serializer.save()
-            return success_response("Book created successfully", serializer.data, status.HTTP_201_CREATED)
-        return error_response("Failed to create book", serializer.errors)
+            return success_response(data=serializer.data, message="Book created successfully", status=status.HTTP_201_CREATED)
+        return error_response(message="Failed to create book", errors=serializer.errors)
 
 class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
@@ -127,7 +138,7 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return success_response("Book retrieved successfully", serializer.data)
+        return success_response(data=serializer.data, message="Book retrieved successfully")
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -135,8 +146,8 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         if serializer.is_valid():
             serializer.save()
-            return success_response("Book updated successfully", serializer.data)
-        return error_response("Failed to update book", serializer.errors)
+            return success_response(data=serializer.data, message="Book updated successfully")
+        return error_response(message="Failed to update book", errors=serializer.errors)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -149,9 +160,9 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         if active_borrows:
             return error_response(
-                "Cannot delete book because it has active borrow records.", 
-                status_code=status.HTTP_400_BAD_REQUEST
+                message="Cannot delete book because it has active borrow records.", 
+                status=status.HTTP_400_BAD_REQUEST
             )
             
         instance.delete()
-        return success_response("Book deleted successfully", status_code=status.HTTP_200_OK)
+        return success_response(message="Book deleted successfully", status=status.HTTP_200_OK)
