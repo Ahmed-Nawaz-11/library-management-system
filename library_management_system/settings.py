@@ -85,7 +85,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'accounts.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -97,14 +97,19 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
+    'ROTATE_REFRESH_TOKENS': False,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 
-# CORS — allows frontend dev server to talk to Django
+# CORS — allow frontend to send cookies cross-origin
 
-CORS_ALLOW_ALL_ORIGINS = True      # tighten this in production
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# Cookie max-ages (in seconds)
+COOKIE_ACCESS_MAX_AGE = 60 * 60          # 1 hour
+COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24 * 7  # 7 days
 
 
 # Password validation
