@@ -10,6 +10,7 @@ A full-featured backend REST API for managing a library — built with Django, D
 - Django 6.0.3
 - Django REST Framework
 - SimpleJWT (JWT authentication)
+- **Cookie-based Auth** (HTTP-only cookies for enhanced security)
 - PostgreSQL 18
 - django-cors-headers
 - python-decouple (environment variable management)
@@ -61,8 +62,10 @@ LIBRARY MANAGEMENT SYSTEM/
 ### Accounts App
 
 - Custom User model with roles: `admin`, `librarian`, `member`
-- JWT-based registration and login
+- **Cookie-based JWT authentication** (HTTP-only, Secure, SameSite=Lax)
+- Tokens stored in browser cookies for automatic session handling
 - Login with either **username or email** + password
+- Secure **Logout** with token revocation in DB
 - User profile view and update
 - Change password with old password verification
 - Admin can list all members with pagination
@@ -125,8 +128,9 @@ LIBRARY MANAGEMENT SYSTEM/
 
 ```
 POST   /api/auth/register/           Register new member account
-POST   /api/auth/login/              Login with username or email + password
-POST   /api/auth/refresh/            Refresh access token
+POST   /api/auth/login/              Login (tokens sent in HTTP-only cookies)
+POST   /api/auth/logout/             Logout (revokes token and clears cookies)
+POST   /api/auth/refresh/            Refresh access token using refresh cookie
 GET    /api/auth/profile/            View own profile
 PATCH  /api/auth/profile/            Update own profile
 POST   /api/auth/change-password/    Change own password
@@ -204,20 +208,34 @@ GET    /api/reports/overdue-members/  Members with overdue books (admin only)
 
 Every single endpoint returns this consistent structure:
 
-**Success:**
+**Success (Login):**
 
 ```json
 {
     "success": true,
-    "message": "Book issued successfully",
+    "message": "Login successful",
     "data": {
-        "id": 1,
-        "book_title": "Harry Potter",
-        "member_username": "ahmad_member",
-        "borrow_date": "2026-05-01",
-        "due_date": "2026-05-15",
-        "status": "borrowed"
-    },
+        "user": {
+            "id": 1,
+            "username": "ahmad_member",
+            "email": "ahmad@test.com",
+            "role": "member",
+            "is_suspended": false
+        }
+    }
+}
+```
+
+> [!NOTE]
+> For security, the `access_token` and `refresh_token` are now returned in **HTTP-only cookies**, not in the response body.
+
+**Success (List endpoints):**
+
+```json
+{
+    "success": true,
+    "message": "Books retrieved successfully",
+    "data": [ ... ],
     "pagination": {
         "count": 50,
         "next": "/api/books/?page=2",
@@ -374,22 +392,20 @@ POST `/api/auth/login/`
 }
 ```
 
-or
-
-```json
-{
-    "email": "ahmad@test.com",
-    "password": "Test@1234"
-}
-```
-
-Copy the `access` token from the response.
+The server will set `access_token` and `refresh_token` as cookies.
 
 **Step 3 — Use token for protected routes:**
 
-In Postman go to Authorization tab → Bearer Token → paste access token.
+- **In Browsers:** Cookies are sent automatically.
+- **In Postman:**
+    - Cookies are automatically captured and sent if you use the desktop client.
+    - Alternatively, you can still use the **Authorization** tab → **Bearer Token** if you have a manual token, as the API supports a fallback to headers for development.
 
-**Step 4 — Test public book endpoint (no token needed):**
+**Step 4 — Test Logout:**
+
+POST `/api/auth/logout/` (Clears cookies and revokes session in DB).
+
+**Step 5 — Test public book endpoint (no token needed):**
 
 GET `/api/books/`
 
@@ -407,6 +423,16 @@ GET `/api/books/`
 | role | CharField | admin / librarian / member |
 | membership_expiry | DateField | null allowed |
 | is_suspended | BooleanField | default False |
+
+### accounts.UserRefreshToken
+
+| Field | Type | Notes |
+|---|---|---|
+| user | FK → User | |
+| token | TextField | The actual refresh token string |
+| created_at | DateTimeField | auto |
+| expires_at | DateTimeField | when session expires |
+| is_revoked | BooleanField | used for logout |
 
 ### books.Author
 
@@ -473,12 +499,14 @@ GET `/api/books/`
 ## Security
 
 - All sensitive credentials stored in `.env` file and never pushed to GitHub
+- **Cookie-based Security**: Tokens are stored in HTTP-only, SameSite=Lax cookies to prevent XSS and CSRF.
+- **Refresh Token Rotation & Revocation**: Refresh tokens are stored in the database and revoked on logout.
 - JWT access tokens expire in 60 minutes
 - JWT refresh tokens expire in 7 days
 - Every endpoint has a specific permission class
 - Wrong role returns `403 Forbidden`
 - No token returns `401 Unauthorized`
-- CORS configured for frontend access during development
+- CORS configured with `ALLOW_CREDENTIALS=True` for secure cross-origin cookie handling
 
 ---
 
