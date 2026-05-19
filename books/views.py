@@ -66,6 +66,48 @@ class AuthorListCreateView(generics.ListCreateAPIView):
             return success_response(data=serializer.data, message="Author created successfully", status=status.HTTP_201_CREATED)
         return error_response(message="Failed to create author", errors=serializer.errors)
 
+class AuthorDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'DELETE':
+            return [IsAdmin()]
+        elif self.request.method in ['PUT', 'PATCH']:
+            return [IsAdminOrLibrarian()]
+        return [permissions.AllowAny()]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return success_response(data=serializer.data, message="Author retrieved successfully")
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if serializer.is_valid():
+            serializer.save()
+            return success_response(data=serializer.data, message="Author updated successfully")
+        return error_response(message="Failed to update author", errors=serializer.errors)
+
+    def destroy(self, request, *args, **kwargs):
+        from books.models import Book
+        author = self.get_object()
+        if Book.objects.filter(author=author).exists():
+            return Response({
+                "success": False,
+                "message": "Cannot delete author with existing books",
+                "errors": {}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        author.delete()
+        return Response({
+            "success": True, 
+            "message": "Author deleted successfully", 
+            "data": {}
+        }, status=status.HTTP_200_OK)
+
 class BookListCreateView(generics.ListCreateAPIView):
     serializer_class = BookSerializer
     def get_permissions(self):
