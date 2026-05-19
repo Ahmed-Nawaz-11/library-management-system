@@ -1,0 +1,489 @@
+{
+  "info": {
+    "name": "Library Management System",
+    "description": "How to use: Simply hit the Login endpoint with valid credentials. Postman will automatically store the secure access and refresh cookies in its Cookie Jar and attach them to all subsequent requests automatically.\nThree test accounts: admin_user/Admin@1234, librarian1/Lib@1234, ahmad_member/Test@1234\nBase URL is http://127.0.0.1:8000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "FOLDER 1 — Authentication",
+      "item": [
+        {
+          "name": "Register new member",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ahmad_member\",\n  \"email\": \"ahmad@test.com\",\n  \"password\": \"Test@1234\",\n  \"phone\": \"03001234567\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register/"}
+          }
+        },
+        {
+          "name": "Login with username",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ahmad_member\",\n  \"password\": \"Test@1234\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login/"}
+          }
+        },
+        {
+          "name": "Login with email",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmad@test.com\",\n  \"password\": \"Test@1234\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/auth/login/"}
+          }
+        },
+        {
+          "name": "Refresh access token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/auth/refresh/"}
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/auth/logout/"}
+          }
+        },
+        {
+          "name": "View own profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/auth/profile/"}
+          }
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"03009999999\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/auth/profile/"}
+          }
+        },
+        {
+          "name": "Change password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"old_password\": \"Test@1234\",\n  \"new_password\": \"NewPass@5678\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/auth/change-password/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 2 — Members (Admin Only)",
+      "item": [
+        {
+          "name": "List all members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/members/"}
+          }
+        },
+        {
+          "name": "Suspend member",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/members/1/suspend/"}
+          }
+        },
+        {
+          "name": "Activate member",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/members/1/activate/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 3 — Books",
+      "item": [
+        {
+          "name": "List all books (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/books/"}
+          }
+        },
+        {
+          "name": "Search books",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/books/?search=harry"}
+          }
+        },
+        {
+          "name": "Filter by category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/books/?category=1"}
+          }
+        },
+        {
+          "name": "Available books only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/books/?available=true"}
+          }
+        },
+        {
+          "name": "Add book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Harry Potter\",\n  \"isbn\": \"9780747532699\",\n  \"author\": 1,\n  \"category\": 1,\n  \"publisher\": \"Bloomsbury\",\n  \"publish_year\": 1997,\n  \"total_copies\": 5,\n  \"available_copies\": 5,\n  \"cover_image\": \"\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/books/"}
+          }
+        },
+        {
+          "name": "Book detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/books/1/"}
+          }
+        },
+        {
+          "name": "Update book",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"total_copies\": 10\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/books/1/"}
+          }
+        },
+        {
+          "name": "Delete book",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/books/1/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 4 — Authors",
+      "item": [
+        {
+          "name": "List all authors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/authors/"}
+          }
+        },
+        {
+          "name": "Add author",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"J.K. Rowling\",\n  \"bio\": \"British author\",\n  \"nationality\": \"British\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/authors/"}
+          }
+        },
+        {
+          "name": "Author detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/authors/1/"}
+          }
+        },
+        {
+          "name": "Update author",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Updated bio\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/authors/1/"}
+          }
+        },
+        {
+          "name": "Delete author",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/authors/1/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 5 — Categories",
+      "item": [
+        {
+          "name": "List all categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/categories/"}
+          }
+        },
+        {
+          "name": "Add category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fantasy\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/categories/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 6 — Borrowing",
+      "item": [
+        {
+          "name": "Issue book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"member_id\": 1,\n  \"book_id\": 1\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/borrow/issue/"}
+          }
+        },
+        {
+          "name": "Return book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"borrow_id\": 1\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/borrow/return/"}
+          }
+        },
+        {
+          "name": "Renew book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"borrow_id\": 1\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/borrow/renew/"}
+          }
+        },
+        {
+          "name": "Borrow history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/borrow/history/"}
+          }
+        },
+        {
+          "name": "Member history (librarian)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/borrow/history/?member_id=1"}
+          }
+        },
+        {
+          "name": "Overdue records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/borrow/overdue/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 7 — Reservations",
+      "item": [
+        {
+          "name": "List reservations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/reservations/"}
+          }
+        },
+        {
+          "name": "Make reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"book_id\": 1\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {"raw": "{{base_url}}/api/reservations/"}
+          }
+        },
+        {
+          "name": "Cancel reservation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/reservations/1/cancel/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 8 — Fines",
+      "item": [
+        {
+          "name": "List fines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/fines/"}
+          }
+        },
+        {
+          "name": "Unpaid fines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/fines/?is_paid=false"}
+          }
+        },
+        {
+          "name": "Mark fine as paid",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/fines/1/pay/"}
+          }
+        },
+        {
+          "name": "Waive fine",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/fines/1/waive/"}
+          }
+        }
+      ]
+    },
+    {
+      "name": "FOLDER 9 — Reports",
+      "item": [
+        {
+          "name": "Dashboard summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/reports/summary/"}
+          }
+        },
+        {
+          "name": "Popular books",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/reports/popular-books/"}
+          }
+        },
+        {
+          "name": "Overdue members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/reports/overdue-members/"}
+          }
+        }
+      ]
+    }
+  ]
+}
