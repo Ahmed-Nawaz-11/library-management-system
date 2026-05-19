@@ -80,6 +80,7 @@ LIBRARY MANAGEMENT SYSTEM/
 - Paginated results (10 per page)
 - Role-based access: public GET, librarian/admin POST/PATCH, admin DELETE
 - Blocks deletion of books that have active borrow records
+- Blocks deletion of authors that have associated books
 
 ### Borrowing App
 
@@ -154,6 +155,9 @@ PATCH  /api/books/<id>/              Update book (librarian/admin)
 DELETE /api/books/<id>/              Delete book (admin only)
 GET    /api/authors/                 List authors (public)
 POST   /api/authors/                 Add author (librarian/admin)
+GET    /api/authors/<id>/            Author detail (public)
+PATCH  /api/authors/<id>/            Update author (librarian/admin)
+DELETE /api/authors/<id>/            Delete author (admin only)
 GET    /api/categories/              List categories (public)
 POST   /api/categories/              Add category (librarian/admin)
 ```
@@ -408,6 +412,15 @@ POST `/api/auth/logout/` (Clears cookies and revokes session in DB).
 **Step 5 — Test public book endpoint (no token needed):**
 
 GET `/api/books/`
+
+### Importable Postman Collection
+
+We have generated a complete, ready-to-use Postman Collection containing all 9 API folders, fully configured for HTTP-only cookie authentication.
+
+1. Navigate to the `docs/` folder in the project.
+2. Import `LibraryManagementSystem.postman_collection.json` into Postman.
+3. Once imported, you simply hit the `Login` endpoint with valid credentials.
+4. Postman's Cookie Jar will automatically save the secure cookies and attach them to all subsequent protected requests!
 
 ---
 
