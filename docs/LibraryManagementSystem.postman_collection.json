@@ -1,16 +1,9 @@
 {
   "info": {
     "name": "Library Management System",
-    "description": "How to use: Simply hit the Login endpoint with valid credentials. Postman will automatically store the secure access and refresh cookies in its Cookie Jar and attach them to all subsequent requests automatically.\nThree test accounts: admin_user/Admin@1234, librarian1/Lib@1234, ahmad_member/Test@1234\nBase URL is http://127.0.0.1:8000",
+    "description": "How to use: Simply hit the Login endpoint with valid credentials. Base URL is http://127.0.0.1:8000",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://127.0.0.1:8000",
-      "type": "string"
-    }
-  ],
   "item": [
     {
       "name": "FOLDER 1 — Authentication",
@@ -19,39 +12,66 @@
           "name": "Register new member",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"ahmad_member\",\n  \"email\": \"ahmad@test.com\",\n  \"password\": \"Test@1234\",\n  \"phone\": \"03001234567\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/auth/register/"}
+            "url": "{{base_url}}/api/auth/register/"
           }
         },
         {
           "name": "Login with username",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"ahmad_member\",\n  \"password\": \"Test@1234\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/auth/login/"}
+            "url": "{{base_url}}/api/auth/login/"
           }
         },
         {
           "name": "Login with email",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"ahmad@test.com\",\n  \"password\": \"Test@1234\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/auth/login/"}
+            "url": "{{base_url}}/api/auth/login/"
           }
         },
         {
@@ -59,7 +79,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/auth/refresh/"}
+            "url": "{{base_url}}/api/auth/refresh/"
           }
         },
         {
@@ -67,7 +87,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/auth/logout/"}
+            "url": "{{base_url}}/api/auth/logout/"
           }
         },
         {
@@ -75,7 +95,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/auth/profile/"}
+            "url": "{{base_url}}/api/auth/profile/"
           }
         },
         {
@@ -83,14 +103,21 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"phone\": \"03009999999\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/auth/profile/"}
+            "url": "{{base_url}}/api/auth/profile/"
           }
         },
         {
@@ -98,14 +125,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"old_password\": \"Test@1234\",\n  \"new_password\": \"NewPass@5678\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/auth/change-password/"}
+            "url": "{{base_url}}/api/auth/change-password/"
           }
         }
       ]
@@ -118,7 +152,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/members/"}
+            "url": "{{base_url}}/api/members/"
           }
         },
         {
@@ -126,7 +160,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/members/1/suspend/"}
+            "url": "{{base_url}}/api/members/1/suspend/"
           }
         },
         {
@@ -134,7 +168,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/members/1/activate/"}
+            "url": "{{base_url}}/api/members/1/activate/"
           }
         }
       ]
@@ -147,7 +181,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/books/"}
+            "url": "{{base_url}}/api/books/"
           }
         },
         {
@@ -155,7 +189,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/books/?search=harry"}
+            "url": "{{base_url}}/api/books/?search=harry"
           }
         },
         {
@@ -163,7 +197,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/books/?category=1"}
+            "url": "{{base_url}}/api/books/?category=1"
           }
         },
         {
@@ -171,7 +205,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/books/?available=true"}
+            "url": "{{base_url}}/api/books/?available=true"
           }
         },
         {
@@ -179,14 +213,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Harry Potter\",\n  \"isbn\": \"9780747532699\",\n  \"author\": 1,\n  \"category\": 1,\n  \"publisher\": \"Bloomsbury\",\n  \"publish_year\": 1997,\n  \"total_copies\": 5,\n  \"available_copies\": 5,\n  \"cover_image\": \"\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/books/"}
+            "url": "{{base_url}}/api/books/"
           }
         },
         {
@@ -194,7 +235,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/books/1/"}
+            "url": "{{base_url}}/api/books/1/"
           }
         },
         {
@@ -202,14 +243,21 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"total_copies\": 10\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/books/1/"}
+            "url": "{{base_url}}/api/books/1/"
           }
         },
         {
@@ -217,7 +265,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/books/1/"}
+            "url": "{{base_url}}/api/books/1/"
           }
         }
       ]
@@ -230,7 +278,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/authors/"}
+            "url": "{{base_url}}/api/authors/"
           }
         },
         {
@@ -238,14 +286,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"J.K. Rowling\",\n  \"bio\": \"British author\",\n  \"nationality\": \"British\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/authors/"}
+            "url": "{{base_url}}/api/authors/"
           }
         },
         {
@@ -253,7 +308,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/authors/1/"}
+            "url": "{{base_url}}/api/authors/1/"
           }
         },
         {
@@ -261,14 +316,21 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bio\": \"Updated bio\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/authors/1/"}
+            "url": "{{base_url}}/api/authors/1/"
           }
         },
         {
@@ -276,7 +338,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/authors/1/"}
+            "url": "{{base_url}}/api/authors/1/"
           }
         }
       ]
@@ -289,7 +351,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/categories/"}
+            "url": "{{base_url}}/api/categories/"
           }
         },
         {
@@ -297,14 +359,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Fantasy\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/categories/"}
+            "url": "{{base_url}}/api/categories/"
           }
         }
       ]
@@ -317,14 +386,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"member_id\": 1,\n  \"book_id\": 1\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/borrow/issue/"}
+            "url": "{{base_url}}/api/borrow/issue/"
           }
         },
         {
@@ -332,14 +408,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"borrow_id\": 1\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/borrow/return/"}
+            "url": "{{base_url}}/api/borrow/return/"
           }
         },
         {
@@ -347,14 +430,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"borrow_id\": 1\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/borrow/renew/"}
+            "url": "{{base_url}}/api/borrow/renew/"
           }
         },
         {
@@ -362,7 +452,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/borrow/history/"}
+            "url": "{{base_url}}/api/borrow/history/"
           }
         },
         {
@@ -370,7 +460,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/borrow/history/?member_id=1"}
+            "url": "{{base_url}}/api/borrow/history/?member_id=1"
           }
         },
         {
@@ -378,7 +468,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/borrow/overdue/"}
+            "url": "{{base_url}}/api/borrow/overdue/"
           }
         }
       ]
@@ -391,7 +481,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/reservations/"}
+            "url": "{{base_url}}/api/reservations/"
           }
         },
         {
@@ -399,14 +489,21 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"book_id\": 1\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {"raw": "{{base_url}}/api/reservations/"}
+            "url": "{{base_url}}/api/reservations/"
           }
         },
         {
@@ -414,7 +511,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/reservations/1/cancel/"}
+            "url": "{{base_url}}/api/reservations/1/cancel/"
           }
         }
       ]
@@ -427,7 +524,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/fines/"}
+            "url": "{{base_url}}/api/fines/"
           }
         },
         {
@@ -435,7 +532,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/fines/?is_paid=false"}
+            "url": "{{base_url}}/api/fines/?is_paid=false"
           }
         },
         {
@@ -443,7 +540,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/fines/1/pay/"}
+            "url": "{{base_url}}/api/fines/1/pay/"
           }
         },
         {
@@ -451,7 +548,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/fines/1/waive/"}
+            "url": "{{base_url}}/api/fines/1/waive/"
           }
         }
       ]
@@ -464,7 +561,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/reports/summary/"}
+            "url": "{{base_url}}/api/reports/summary/"
           }
         },
         {
@@ -472,7 +569,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/reports/popular-books/"}
+            "url": "{{base_url}}/api/reports/popular-books/"
           }
         },
         {
@@ -480,7 +577,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {"raw": "{{base_url}}/api/reports/overdue-members/"}
+            "url": "{{base_url}}/api/reports/overdue-members/"
           }
         }
       ]
